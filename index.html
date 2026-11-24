@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>طلب شغل</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--tx:#17203a;--mut:#6b7491;--pri:#4f46e5;--pri2:#7c3aed;--ok:#16a34a;--warn:#f59e0b;--bd:#e3e7f2;--star:#f5b301;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1220;--card:#181c30;--tx:#eef0fa;--mut:#9aa3c4;--bd:#2a3050}}
+:root[data-theme="dark"]{--bg:#0f1220;--card:#181c30;--tx:#eef0fa;--mut:#9aa3c4;--bd:#2a3050}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:'Cairo',Tahoma,Arial,sans-serif;line-height:1.6}
+button,input,select,textarea{font:inherit;color:inherit}
+.wrap{max-width:980px;margin:auto;padding:14px}
+header{background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;padding:14px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+header .in{max-width:980px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.logo{font-weight:800;font-size:22px}
+nav{display:flex;gap:6px;overflow-x:auto;padding:10px 0}
+nav button{border:1px solid var(--bd);background:var(--card);padding:8px 14px;border-radius:99px;cursor:pointer;white-space:nowrap}
+nav button.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:14px;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.sp{justify-content:space-between}
+.btn{background:var(--pri);color:#fff;border:0;border-radius:10px;padding:9px 16px;cursor:pointer;font-weight:600}
+.btn.g{background:transparent;color:var(--pri);border:1px solid var(--pri)}.btn.ok{background:var(--ok)}.btn.w{background:var(--warn)}
+.btn.s{padding:5px 10px;font-size:13px}
+input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);margin:4px 0 10px}
+label{font-size:14px;color:var(--mut)}
+.tag{font-size:12px;padding:2px 10px;border-radius:99px;background:var(--bg);border:1px solid var(--bd);color:var(--mut)}
+.tag.open{color:var(--ok)}.tag.progress{color:var(--warn)}.tag.done{color:var(--pri)}
+.price{font-weight:800;color:var(--ok);font-size:18px}
+.mut{color:var(--mut);font-size:13px}
+.st{color:var(--star)}
+.box{background:var(--bg);border-radius:10px;padding:8px 10px;margin-top:8px;font-size:13px}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:12px}
+.kpi div{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px;text-align:center}
+.kpi b{display:block;font-size:22px}
+.bar{height:10px;background:var(--bg);border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--pri),var(--pri2))}
+.auth{max-width:420px;margin:7vh auto}
+.modal{position:fixed;inset:0;background:#0009;display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
+.modal .card{max-width:380px;width:100%;margin:0}
+.rs button{background:none;border:0;font-size:30px;cursor:pointer;color:var(--bd)}.rs button.on{color:var(--star)}
+.err{color:#dc2626;font-size:13px;min-height:18px}
+.toast{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:#17203a;color:#fff;padding:10px 18px;border-radius:99px;z-index:30}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const CATS=['مونتاج فيديو','تصميم جرافيك','كتابة محتوى','ترجمة','برمجة ومواقع','تصوير','تسويق وسوشيال','إدخال بيانات','دروس خصوصية'];
+const FEE=0.1;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let S=null,view='browse',flt={q:'',cat:'',sort:'new'};
+try{S=JSON.parse(localStorage.getItem('tsdb3'))}catch(e){}
+if(!S){const n=Date.now(),d=864e5;
+S={me:null,users:[
+{id:'u1',name:'نيل ميديا',email:'nile@gmail.com',phone:'01012345678'},
+{id:'u2',name:'مي أحمد',email:'mai@gmail.com',phone:'01123456789'},
+{id:'u3',name:'متجر الأمل',email:'amal@gmail.com',phone:'01234567890'}],
+tasks:[
+{id:'t1',title:'مونتاج فيديو يوتيوب 8 دقائق',cat:CATS[0],desc:'قص وإضافة موسيقى وترجمة نصية مع مقدمة بسيطة.',price:400,days:3,by:'u1',status:'open',at:n-d},
+{id:'t2',title:'تصميم 5 بوسترات إنستجرام',cat:CATS[1],desc:'هوية ألوان جاهزة، المطلوب 5 تصميمات مربعة.',price:300,days:2,by:'u3',status:'open',at:n-2*d},
+{id:'t3',title:'كتابة 10 منشورات لصفحة فيسبوك',cat:CATS[2],desc:'محتوى عن منتجات العناية بالبشرة بلهجة مصرية.',price:200,days:4,by:'u2',status:'open',at:n-3*d},
+{id:'t4',title:'ترجمة مقال من الإنجليزية للعربية',cat:CATS[3],desc:'حوالي 1500 كلمة، موضوع تقني.',price:250,days:3,by:'u1',status:'open',at:n-d},
+{id:'t5',title:'مونتاج ريلز قصيرة (3 فيديوهات)',cat:CATS[0],desc:'فيديوهات 30 ثانية بحركات انتقال وترجمة.',price:350,days:2,by:'u3',status:'open',at:n-5*d},
+{id:'t6',title:'تصوير منتجات بالموبايل',cat:CATS[5],desc:'تصوير 20 منتج على خلفية بيضاء بالقاهرة.',price:500,days:5,by:'u2',status:'open',at:n-d},
+{id:'t7',title:'إدخال بيانات في شيت',cat:CATS[7],desc:'نقل 300 صف من صور إلى Excel.',price:150,days:2,by:'u1',status:'open',at:n-d}]};}
+const save=()=>{try{localStorage.setItem('tsdb3',JSON.stringify(S))}catch(e){}};
+S.notes=S.notes||[];
+[['t8','تعديل 10 صور منتجات',1,'إزالة خلفية وتحسين إضاءة وألوان لـ 10 صور.',180,2,'u2'],
+['t9','تصميم لوجو لمتجر ملابس',1,'3 أفكار مبدئية ثم تعديل على الأنسب مع ملفات PNG وSVG.',350,3,'u3'],
+['t10','مونتاج إعلان 60 ثانية',0,'دمج لقطات جاهزة مع موسيقى وتعليق صوتي ونصوص متحركة.',500,3,'u1'],
+['t11','كتابة سيرة ذاتية احترافية',2,'CV بالعربي والإنجليزي لخريج جديد.',120,1,'u2'],
+['t12','ترجمة سب تايتل لفيديو 15 دقيقة',3,'من العربي للإنجليزي بملف SRT جاهز.',300,3,'u1'],
+['t13','تصميم صفحة هبوط بسيطة',4,'صفحة HTML/CSS متجاوبة لعرض خدمة مع نموذج تواصل.',900,6,'u3'],
+['t14','إدارة صفحة إنستجرام لمدة أسبوع',6,'نشر 7 بوستات وردود على التعليقات والرسائل.',400,7,'u2'],
+['t15','تفريغ ملف صوتي إلى نص',7,'تسجيل 40 دقيقة بالعامية المصرية.',200,2,'u1'],
+['t16','4 حصص رياضيات ثانوية عامة',8,'شرح أونلاين لطالب في الصف الثالث الثانوي.',320,7,'u3'],
+['t17','تصوير مناسبة صغيرة (ساعتين)',5,'تصوير حفلة عائلية بالقاهرة وتسليم 50 صورة معدّلة.',700,1,'u2'],
+['t18','مونتاج حلقة بودكاست 45 دقيقة',0,'تنظيف الصوت وقص الأخطاء وإضافة مقدمة وخاتمة.',450,4,'u1'],
+['t19','تصميم 3 بنرات قناة يوتيوب',1,'غلاف القناة + صورتين مصغّرتين للفيديوهات.',200,2,'u3']
+].forEach(([id,title,c,desc,price,days,by],i)=>{if(!S.tasks.some(t=>t.id===id))S.tasks.push({id,title,cat:CATS[c],desc,price,days,by,status:'open',at:Date.now()-(i+1)*36e5*7,offers:[],msgs:[]})});
+S.tasks.forEach(t=>{t.offers=t.offers||[];t.msgs=t.msgs||[]});
+const sha=async s=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode('ts:'+s)))].map(b=>b.toString(16).padStart(2,'0')).join('');
+const note=(to,tx)=>{S.notes.push({to,tx,at:Date.now(),r:0})};
+const vb=u=>u.ver?' <span title="حساب موثّق" style="color:#0ea5e9">✔</span>':'';
+function modal(h){const m=document.createElement('div');m.className='modal';m.innerHTML='<div class="card">'+h+'</div>';m.onclick=e=>{if(e.target===m)m.remove()};document.body.append(m);return m}
+const me=()=>S.users.find(u=>u.id===S.me);
+const user=id=>S.users.find(u=>u.id===id)||{name:'مستخدم'};
+const fmt=t=>new Date(t).toLocaleString('ar-EG',{dateStyle:'medium',timeStyle:'short'});
+const stars=n=>'<span class="st">'+'★'.repeat(Math.round(n))+'☆'.repeat(5-Math.round(n))+'</span>';
+function rating(id,role){const r=S.tasks.map(t=>role==='w'?(t.worker===id?t.rateW:null):(t.by===id?t.rateC:null)).filter(Boolean);
+ return{n:r.length,avg:r.length?r.reduce((a,b)=>a+b.s,0)/r.length:0}}
+function toast(m){const e=document.createElement('div');e.className='toast';e.textContent=m;document.body.append(e);setTimeout(()=>e.remove(),2200)}
+const stLabel={open:'متاحة',progress:'قيد التنفيذ',done:'تم التسليم'};
+
+function render(){
+ if(!S.me||!me()){return authView()}
+ const u=me();
+ $('#app').innerHTML=`<header><div class="in"><span class="logo">💼 طلب شغل</span><span class="row"><button class="btn s g" style="color:#fff;border-color:#fff" onclick="notes()">🔔 ${S.notes.filter(x=>x.to===S.me&&!x.r).length||''}</button><span>${esc(u.name)}${vb(u)}</span><button class="btn s g" style="color:#fff;border-color:#fff" onclick="logout()">خروج</button></span></div></header>
+ <div class="wrap"><nav>${[['browse','🔍 الوظائف'],['post','➕ أضف مهمة'],['work','🛠 شغلي كعامل'],['mine','📋 مهامي كعميل'],['prof','📊 ملفي']].map(([k,l])=>`<button class="${view===k?'on':''}" onclick="go('${k}')">${l}</button>`).join('')}</nav><div id="v"></div></div>`;
+ ({browse,post,work,mine,prof})[view]();
+}
+const go=v=>{view=v;render();scrollTo(0,0)};
+function logout(){S.me=null;save();render()}
+
+function authView(){
+ $('#app').innerHTML=`<div class="wrap"><div class="card auth"><h2 style="margin-top:0">💼 طلب شغل</h2><p class="mut">منصة شغل بارت تايم للطلبة وكل الناس: مونتاج، تصميم، كتابة وغيرها.</p>
+ <label>الاسم</label><input id="n" placeholder="اسمك بالكامل">
+ <label>الجيميل</label><input id="e" type="email" dir="ltr" placeholder="name@gmail.com">
+ <label>رقم التليفون</label><input id="p" type="tel" dir="ltr" placeholder="01012345678">
+ <label>كلمة المرور (6 أحرف على الأقل)</label><input id="pw" type="password" dir="ltr" autocomplete="current-password">
+ <div class="err" id="er"></div><button class="btn" style="width:100%" onclick="login()">دخول / تسجيل</button></div></div>`}
+async function login(){
+ const n=$('#n').value.trim(),e=$('#e').value.trim().toLowerCase(),p=$('#p').value.trim(),er=$('#er');
+ if(n.length<3)return er.textContent='اكتب اسمك (3 حروف على الأقل)';
+ if(!/^[a-z0-9._%+-]+@gmail\.com$/.test(e))return er.textContent='اكتب جيميل صحيح ينتهي بـ @gmail.com';
+ if(!/^01[0125]\d{8}$/.test(p))return er.textContent='رقم التليفون لازم يكون رقم مصري صحيح (11 رقم)';
+ let u=S.users.find(x=>x.email===e);
+ const pw=$('#pw').value;if(pw.length<6)return er.textContent='كلمة المرور 6 أحرف على الأقل';
+ if(u&&['u1','u2','u3','ux'].includes(u.id))return er.textContent='هذا حساب تجريبي، استخدم جيميل آخر';
+ const h=await sha(pw);
+ if(u){if(u.pw&&u.pw!==h)return er.textContent='كلمة المرور غير صحيحة';u.pw=h;u.name=n;u.phone=p}else{u={id:'u'+Date.now(),name:n,email:e,phone:p,pw:h};S.users.push(u)}
+ S.me=u.id;save();view='browse';render()}
+
+function card(t,mode){
+ const c=user(t.by),w=t.worker?user(t.worker):null,cr=rating(c.id,'c'),net=Math.round(t.price*(1-FEE));
+ let h=`<div class="card"><div class="row sp"><b>${esc(t.title)}</b><span class="tag ${t.status}">${stLabel[t.status]}</span></div>
+ <div class="row"><span class="tag">${esc(t.cat)}</span><span class="tag">⏱ ${t.days} يوم</span></div>
+ <p class="mut">${esc(t.desc)}</p>
+ <div class="row sp"><span class="price">${t.price} ج.م</span><span class="mut">صافي العامل ${net} ج.م</span></div>
+ <div class="mut">العميل: ${esc(c.name)} ${cr.n?stars(cr.avg)+' ('+cr.n+')':'· جديد'}</div>`;
+ if(w){const wr=rating(w.id,'w');h+=`<div class="mut">العامل: ${esc(w.name)} ${wr.n?stars(wr.avg):''}</div>`}
+ if(t.start)h+=`<div class="box">🟢 بدأ: <b>${fmt(t.start)}</b><br>🔴 الموعد النهائي: <b>${fmt(t.end)}</b>${t.status==='progress'?`<br>⏳ المتبقي: <b class="cd" data-e="${t.end}"></b>`:`<br>✅ تم التسليم: <b>${fmt(t.doneAt)}</b> ${t.doneAt>t.end?'(متأخر)':'(في الموعد)'}`}</div>`;
+ h+='<div class="row" style="margin-top:10px">';
+ const m=S.me;
+ if(t.status==='open'&&t.by!==m)h+=`<button class="btn" onclick="offer('${t.id}')">${t.offers.some(o=>o.w===m)?'عرضك مُرسل ✔':'قدّم عرض'}</button>`;
+ if(t.status==='open'&&t.by===m)h+=t.offers.map((o,i)=>{const x=user(o.w),r=rating(x.id,'w');return `<div class="box" style="width:100%"><b>${esc(x.name)}</b>${vb(x)} ${r.n?stars(r.avg):'جديد'} · <b>${o.price} ج.م</b><br>${esc(o.msg)}<br>${(x.port||[]).filter(p=>p.l).slice(0,2).map(p=>`<a href="${esc(p.l)}" target="_blank" rel="noopener">🔗 ${esc(p.t)}</a>`).join(' ')} <button class="btn ok s" onclick="acceptOffer('${t.id}',${i})">قبول العرض</button></div>`}).join('')+`<button class="btn g s" onclick="demo('${t.id}')">تجربة: قبول من عامل تجريبي</button><button class="btn g s" onclick="delT('${t.id}')">حذف</button>`;
+ if(t.status==='progress'&&t.worker===m)h+=`<button class="btn ok" onclick="finish('${t.id}')">تسليم المهمة</button>`;
+ if(t.status==='done'){
+  if(t.by===m&&!t.rateW)h+=`<button class="btn w" onclick="rate('${t.id}','w')">قيّم العامل</button>`;
+  if(t.worker===m&&!t.rateC)h+=`<button class="btn w" onclick="rate('${t.id}','c')">قيّم العميل</button>`;
+  if(t.rateW&&(t.by===m||t.worker===m))h+=`<div class="box" style="width:100%">تقييم العامل: ${stars(t.rateW.s)} ${esc(t.rateW.c)}</div>`;
+  if(t.rateC&&(t.by===m||t.worker===m))h+=`<div class="box" style="width:100%">تقييم العميل: ${stars(t.rateC.s)} ${esc(t.rateC.c)}</div>`}
+ if(t.by===m&&t.worker&&w)h+=`<div class="mut" style="width:100%">📞 ${esc(w.phone)} · ✉ ${esc(w.email)}</div>`;
+ if(t.worker===m)h+=`<div class="mut" style="width:100%">📞 العميل: ${esc(c.phone)}</div>`;
+ if(t.worker&&(t.by===m||t.worker===m)){h+=`<button class="btn g s" onclick="chat('${t.id}')">💬 شات (${(t.msgs||[]).length})</button><div class="mut" style="width:100%">💳 ${esc(t.pay||'فودافون كاش')} — ${t.rel?'تم تحرير الدفع ✅':t.escrow?'في الضمان 🔒':'لم يُدفع بعد'}</div>`;
+  if(t.by===m&&!t.escrow&&t.status==='progress')h+=`<button class="btn w s" onclick="pay('${t.id}')">ادفع للضمان</button>`;
+  if(t.by===m&&t.escrow&&!t.rel&&t.status==='done')h+=`<button class="btn ok s" onclick="release('${t.id}')">حرر الدفع للعامل</button>`}
+ return h+'</div></div>'}
+
+function browse(){
+ const f=flt;let L=S.tasks.filter(t=>t.status==='open'&&(!f.cat||t.cat===f.cat)&&(!f.q||(t.title+t.desc).includes(f.q)));
+ L.sort((a,b)=>f.sort==='hi'?b.price-a.price:f.sort==='lo'?a.price-b.price:b.at-a.at);
+ $('#v').innerHTML=`<div class="card"><div class="row"><input id="q" style="flex:2;margin:0" placeholder="ابحث عن شغل..." value="${esc(f.q)}" oninput="flt.q=this.value;list()">
+ <select style="flex:1;margin:0" onchange="flt.cat=this.value;list()"><option value="">كل التصنيفات</option>${CATS.map(c=>`<option ${f.cat===c?'selected':''}>${c}</option>`).join('')}</select>
+ <select style="flex:1;margin:0" onchange="flt.sort=this.value;list()"><option value="new">الأحدث</option><option value="hi" ${f.sort==='hi'?'selected':''}>الأعلى سعراً</option><option value="lo" ${f.sort==='lo'?'selected':''}>الأقل سعراً</option></select></div></div><div id="L"></div>`;list()}
+function list(){
+ const f=flt;let L=S.tasks.filter(t=>t.status==='open'&&(!f.cat||t.cat===f.cat)&&(!f.q||(t.title+t.desc).includes(f.q)));
+ L.sort((a,b)=>f.sort==='hi'?b.price-a.price:f.sort==='lo'?a.price-b.price:b.at-a.at);
+ $('#L').innerHTML=L.length?`<div class="grid">${L.map(t=>card(t)).join('')}</div>`:'<div class="card mut">لا توجد مهام مطابقة.</div>';tick()}
+
+function post(){
+ $('#v').innerHTML=`<div class="card"><h3 style="margin-top:0">أضف مهمة جديدة</h3>
+ <label>عنوان المهمة</label><input id="tt" placeholder="مثال: مونتاج فيديو 5 دقائق">
+ <label>التصنيف</label><select id="tc">${CATS.map(c=>`<option>${c}</option>`).join('')}</select>
+ <label>الوصف</label><textarea id="td" rows="3"></textarea>
+ <div class="row"><div style="flex:1"><label>السعر (ج.م)</label><input id="tp" type="number" min="20"></div><div style="flex:1"><label>المدة (أيام)</label><input id="tdays" type="number" min="1" value="3"></div></div>
+ <label>طريقة الدفع</label><select id="tpay"><option>فودافون كاش</option><option>إنستاباي</option><option>كاش عند التسليم</option></select>
+ <div class="err" id="er"></div><button class="btn" onclick="addT()">نشر المهمة</button></div>`}
+function addT(){
+ const t={id:'t'+Date.now(),title:$('#tt').value.trim(),cat:$('#tc').value,desc:$('#td').value.trim(),price:+$('#tp').value,days:+$('#tdays').value,by:S.me,status:'open',at:Date.now(),offers:[],msgs:[],pay:$('#tpay').value};
+ if(t.title.length<4||t.desc.length<5||!(t.price>=20)||!(t.days>=1))return $('#er').textContent='كمّل كل البيانات (السعر 20 ج.م على الأقل)';
+ S.tasks.push(t);save();toast('تم نشر المهمة ✅');go('mine')}
+function delT(id){S.tasks=S.tasks.filter(t=>t.id!==id);save();render()}
+function offer(id){const t=S.tasks.find(x=>x.id===id);
+ if(t.offers.some(o=>o.w===S.me))return toast('قدّمت عرض بالفعل');
+ const m=modal(`<h3 style="margin-top:0">قدّم عرضك</h3><label>سعرك (ج.م)</label><input id="op" type="number" value="${t.price}"><label>رسالة للعميل</label><textarea id="om" rows="2"></textarea><div class="row"><button class="btn" id="ok">إرسال</button><button class="btn g" id="no">إلغاء</button></div>`);
+ m.querySelector('#no').onclick=()=>m.remove();
+ m.querySelector('#ok').onclick=()=>{const p=+m.querySelector('#op').value;if(!(p>=20))return toast('سعر غير صحيح');t.offers.push({w:S.me,price:p,msg:m.querySelector('#om').value.trim()});note(t.by,me().name+' قدّم عرض '+p+' ج.م على: '+t.title);save();m.remove();toast('تم إرسال عرضك ✅');render()}}
+function acceptOffer(id,i){const t=S.tasks.find(x=>x.id===id),o=t.offers[i];
+ Object.assign(t,{status:'progress',worker:o.w,price:o.price,start:Date.now()});t.end=t.start+t.days*864e5;t.offers=[];
+ note(o.w,'تم قبول عرضك على: '+t.title+' — ابدأ الآن');save();toast('تم قبول العرض ⏳');render()}
+function pay(id){const t=S.tasks.find(x=>x.id===id);t.escrow=1;note(t.worker,'العميل دفع '+t.price+' ج.م في الضمان لمهمة: '+t.title);save();toast('تم الدفع للضمان (محاكاة) 💳');render()}
+function release(id){const t=S.tasks.find(x=>x.id===id);t.rel=1;note(t.worker,'تم تحرير دفعتك '+Math.round(t.price*(1-FEE))+' ج.م 🎉');save();toast('تم تحرير الدفع ✅');render()}
+function chat(id){const t=S.tasks.find(x=>x.id===id);
+ const m=modal(`<h3 style="margin-top:0">💬 ${esc(t.title)}</h3><div id="cm" style="max-height:260px;overflow:auto"></div><div class="row"><input id="ct" style="flex:1;margin:0" placeholder="اكتب رسالة"><button class="btn" id="cs">إرسال</button></div>`);
+ const draw=()=>{m.querySelector('#cm').innerHTML=t.msgs.map(x=>`<div class="box" style="${x.f===S.me?'background:var(--pri);color:#fff':''}"><b>${esc(user(x.f).name)}</b>: ${esc(x.tx)}<div style="opacity:.7;font-size:12px">${fmt(x.at)}</div></div>`).join('')||'<p class="mut">ابدأ المحادثة.</p>'};draw();
+ m.querySelector('#cs').onclick=()=>{const i=m.querySelector('#ct'),tx=i.value.trim();if(!tx)return;t.msgs.push({f:S.me,tx,at:Date.now()});note(S.me===t.by?t.worker:t.by,'رسالة جديدة في: '+t.title);save();i.value='';draw()}}
+function notes(){const L=S.notes.filter(x=>x.to===S.me).reverse();
+ const m=modal(`<h3 style="margin-top:0">🔔 الإشعارات</h3><div style="max-height:320px;overflow:auto">${L.map(x=>`<div class="box">${esc(x.tx)}<div class="mut">${fmt(x.at)}</div></div>`).join('')||'<p class="mut">لا إشعارات.</p>'}</div>`);
+ S.notes.forEach(x=>{if(x.to===S.me)x.r=1});save();m.onclick=e=>{if(e.target===m){m.remove();render()}}}
+function verify(){const u=me(),code=String(1000+Math.floor(Math.random()*9000));
+ const m=modal(`<h3 style="margin-top:0">توثيق الحساب</h3><p class="mut">كود التحقق التجريبي المرسل إلى ${esc(u.phone)}: <b>${code}</b><br>(محاكاة — في النسخة الحقيقية يصل برسالة SMS)</p><input id="vc" inputmode="numeric" placeholder="اكتب الكود"><button class="btn" id="vk">تأكيد</button>`);
+ m.querySelector('#vk').onclick=()=>{if(m.querySelector('#vc').value.trim()!==code)return toast('الكود غير صحيح');u.ver=1;save();m.remove();toast('تم توثيق حسابك ✔');render()}}
+function addPort(){const m=modal(`<h3 style="margin-top:0">أضف عمل</h3><input id="pt" placeholder="اسم العمل"><input id="pl" dir="ltr" placeholder="رابط (اختياري) https://..."><button class="btn" id="pk">حفظ</button>`);
+ m.querySelector('#pk').onclick=()=>{const t=m.querySelector('#pt').value.trim(),l=m.querySelector('#pl').value.trim();if(!t)return toast('اكتب اسم العمل');if(l&&!/^https?:\/\//.test(l))return toast('الرابط لازم يبدأ بـ https://');const u=me();(u.port=u.port||[]).push({t,l});save();m.remove();render()}}
+function delPort(i){me().port.splice(i,1);save();render()}
+function demo(id){let w=S.users.find(u=>u.id==='ux');if(!w){w={id:'ux',name:'عامل تجريبي',email:'demo@gmail.com',phone:'01000000000'};S.users.push(w)}
+ const t=S.tasks.find(x=>x.id===id);t.offers.push({w:'ux',price:t.price,msg:'جاهز أبدأ فورًا وأسلّم قبل الموعد!'});note(S.me,'وصلك عرض جديد على: '+t.title);save();toast('وصل عرض تجريبي');render()}
+function finish(id){const t=S.tasks.find(x=>x.id===id);t.status='done';t.doneAt=Date.now();note(t.by,'تم تسليم: '+t.title);save();toast('تم التسليم ✅ قيّم العميل');render()}
+function work(){const L=S.tasks.filter(t=>t.worker===S.me).sort((a,b)=>b.start-a.start);
+ $('#v').innerHTML=L.length?`<div class="grid">${L.map(t=>card(t)).join('')}</div>`:'<div class="card mut">لسه مقبلتش أي مهمة. روح لصفحة الوظائف.</div>';tick()}
+function mine(){const L=S.tasks.filter(t=>t.by===S.me).sort((a,b)=>b.at-a.at);
+ $('#v').innerHTML=L.length?`<div class="grid">${L.map(t=>card(t)).join('')}</div>`:'<div class="card mut">لم تنشر مهام بعد.</div>';tick()}
+
+function rate(id,who){let s=0;const m=document.createElement('div');m.className='modal';
+ m.innerHTML=`<div class="card"><h3 style="margin-top:0">${who==='w'?'قيّم العامل':'قيّم العميل'}</h3><div class="rs">${[1,2,3,4,5].map(i=>`<button data-i="${i}">★</button>`).join('')}</div><textarea id="rc" rows="2" placeholder="تعليقك (اختياري)"></textarea><div class="row"><button class="btn" id="ok">إرسال</button><button class="btn g" id="no">إلغاء</button></div></div>`;
+ document.body.append(m);const bs=[...m.querySelectorAll('.rs button')];
+ bs.forEach(b=>b.onclick=()=>{s=+b.dataset.i;bs.forEach(x=>x.classList.toggle('on',+x.dataset.i<=s))});
+ m.querySelector('#no').onclick=()=>m.remove();
+ m.querySelector('#ok').onclick=()=>{if(!s)return toast('اختر عدد النجوم');const t=S.tasks.find(x=>x.id===id);
+  t[who==='w'?'rateW':'rateC']={s,c:m.querySelector('#rc').value.trim()};note(who==='w'?t.worker:t.by,'حصلت على تقييم جديد '+s+'★');save();m.remove();render()}}
+
+function prof(){
+ const u=me(),rw=rating(u.id,'w'),rc=rating(u.id,'c');
+ const done=S.tasks.filter(t=>t.worker===u.id&&t.status==='done'),act=S.tasks.filter(t=>t.worker===u.id&&t.status==='progress');
+ const earn=done.reduce((a,t)=>a+t.price*(1-FEE),0),ontime=done.filter(t=>t.doneAt<=t.end).length;
+ const lvl=done.length>=10?'🏆 خبير':done.length>=3?'⭐ محترف':'🌱 مبتدئ';
+ const months=[];for(let i=5;i>=0;i--){const d=new Date();d.setDate(1);d.setMonth(d.getMonth()-i);months.push({k:d.getFullYear()*12+d.getMonth(),l:d.toLocaleString('ar-EG',{month:'short'}),v:0})}
+ done.forEach(t=>{const d=new Date(t.doneAt),k=d.getFullYear()*12+d.getMonth(),m=months.find(x=>x.k===k);if(m)m.v+=t.price*(1-FEE)});
+ const mx=Math.max(100,...months.map(m=>m.v)),bw=60;
+ const svg=`<svg viewBox="0 0 ${months.length*bw+20} 170" style="width:100%;max-height:230px">${months.map((m,i)=>{const h=m.v/mx*110;return `<rect x="${i*bw+18}" y="${130-h}" width="34" height="${Math.max(h,2)}" rx="6" fill="#6d5ff0"/><text x="${i*bw+35}" y="${123-h}" text-anchor="middle" font-size="11" fill="currentColor">${Math.round(m.v)}</text><text x="${i*bw+35}" y="150" text-anchor="middle" font-size="12" fill="currentColor">${m.l}</text>`}).join('')}</svg>`;
+ const cc={};done.forEach(t=>cc[t.cat]=(cc[t.cat]||0)+1);const ck=Object.entries(cc).sort((a,b)=>b[1]-a[1]);
+ $('#v').innerHTML=`<div class="card"><div class="row sp"><div><b style="font-size:20px">${esc(u.name)}${vb(u)}</b> <span class="tag">${lvl}</span><div class="mut">✉ ${esc(u.email)} · 📞 ${esc(u.phone)}</div></div></div></div>
+ <div class="kpi"><div><b>${done.length}</b><span class="mut">مهام منجزة</span></div><div><b>${Math.round(earn)}</b><span class="mut">صافي الأرباح ج.م</span></div><div><b>${done.length?Math.round(ontime/done.length*100)+'%':'—'}</b><span class="mut">التسليم في الموعد</span></div><div><b>${act.length}</b><span class="mut">قيد التنفيذ</span></div>
+ <div><b>${rw.n?rw.avg.toFixed(1):'—'}</b><span class="mut">تقييمك كعامل ${rw.n?stars(rw.avg):''}</span></div><div><b>${rc.n?rc.avg.toFixed(1):'—'}</b><span class="mut">تقييمك كعميل ${rc.n?stars(rc.avg):''}</span></div></div>
+ <div class="card"><div class="row sp"><b>🖼 معرض أعمالي</b><span class="row">${u.ver?'':'<button class="btn s w" onclick="verify()">✔ وثّق حسابك</button>'}<button class="btn s" onclick="addPort()">+ أضف عمل</button></span></div>${(u.port||[]).map((p,i)=>`<div class="box row sp"><span>${esc(p.t)} ${p.l?`<a href="${esc(p.l)}" target="_blank" rel="noopener">🔗 فتح</a>`:''}</span><button class="btn s g" onclick="delPort(${i})">حذف</button></div>`).join('')||'<p class="mut">أضف نماذج من شغلك لتزيد فرصتك في قبول عروضك.</p>'}</div>
+ <div class="card"><b>📈 أرباحك آخر 6 شهور (ج.م)</b>${done.length?svg:'<p class="mut">سلّم أول مهمة لتظهر أرباحك هنا.</p>'}</div>
+ <div class="card"><b>🧩 توزيع شغلك حسب التصنيف</b>${ck.length?ck.map(([k,v])=>`<div class="row sp" style="margin-top:8px"><span>${esc(k)}</span><span class="mut">${v}</span></div><div class="bar"><i style="width:${v/done.length*100}%"></i></div>`).join(''):'<p class="mut">لا توجد بيانات بعد.</p>'}</div>`}
+
+function tick(){document.querySelectorAll('.cd').forEach(e=>{let r=+e.dataset.e-Date.now();if(r<=0){e.textContent='انتهى الوقت ⚠️';return}
+ const d=Math.floor(r/864e5),h=Math.floor(r%864e5/36e5),m=Math.floor(r%36e5/6e4),s=Math.floor(r%6e4/1e3);e.textContent=`${d} يوم ${h} س ${m} د ${s} ث`})}
+setInterval(tick,1000);
+render();
+</script>
+</body>
+</html>
